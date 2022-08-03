@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"io"
 	"io/ioutil"
 	"log"
@@ -21,6 +22,8 @@ func main() {
 		}
 
 		c.JSON(http.StatusOK, mapBody)
+
+		fmt.Println(mapBody)
 
 		//c.JSON(http.StatusOK, gin.H{
 		//	"message": "pong",
