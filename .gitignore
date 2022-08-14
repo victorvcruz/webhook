@@ -1,4 +1,9 @@
+# volume of MongoDB
+mongo_data
+
+# jetbrains IDE
 .idea
+
+# artifacts of local development
 .env
 docker-compose.yml
-mongo_data
