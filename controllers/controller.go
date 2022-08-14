@@ -1,31 +1,52 @@
 package controllers
 
 import (
-	"fmt"
+	"encoding/json"
 	"github.com/gofiber/fiber/v2"
+	"go.mongodb.org/mongo-driver/mongo"
+	"net/http"
 	"strings"
-	"webhooks-chat/lib"
+	"webhooks-chat/chat"
+	"webhooks-chat/controllers/request"
+	"webhooks-chat/controllers/response"
+	"webhooks-chat/database"
 )
 
-type Controller struct{}
+type Controller struct {
+	MongoDB *mongo.Collection
+	Chat    chat.ChatClient
+}
 
 func (a *Controller) Post(c *fiber.Ctx) error {
 	webhookData := make(map[string]interface{})
-	err := c.BodyParser(webhookData)
-	if err != nil {
-		return fiber.NewError(782, err.Error())
+	err := json.Unmarshal(c.Body(), &webhookData)
+
+	id := webhookData["pull_request"].(map[string]interface{})["id"].(float64)
+
+	threadID := ""
+	dataByDb, err := database.Find(id, a.MongoDB)
+	if dataByDb != nil {
+		threadID = dataByDb["thread"].(string)
 	}
 
-	messageStr := fmt.Sprintf("<users/all> O *%s* SOLICITOU UM PULL REQUEST NO REPOSITÓRIO <%s|%s>!\n\n%s",
-		webhookData["sender"].(map[string]interface{})["login"],
-		webhookData["repository"].(map[string]interface{})["clone_url"],
-		webhookData["repository"].(map[string]interface{})["full_name"],
-		strings.ReplaceAll(strings.ReplaceAll(webhookData["pull_request"].(map[string]interface{})["url"].(string), "api.", ""), "repos/", ""))
+	typeMessage := response.GetType(webhookData)
+	res, err := a.Chat.SendMessage(a.parseWebhookToDataChat(webhookData), typeMessage, threadID)
 
-	thread := make(map[string]string)
-	thread["name"] = "spaces/AAAA_0GFvXc/threads/HtlAsm2hP78"
+	if dataByDb == nil {
+		err = database.Insert(id, res["thread"].(map[string]interface{})["name"].(string), a.MongoDB)
+	}
 
-	lib.GoogleChat(messageStr, thread)
+	if err != nil {
+		return c.Status(http.StatusInternalServerError).JSON(`{"message": "Server Exception"}`)
+	}
+	return c.Status(http.StatusOK).JSON(`{"message": "OK"}`)
+}
 
-	return c.Status(200).JSON(`{"message": "funfou"}`)
+func (a *Controller) parseWebhookToDataChat(data map[string]interface{}) request.DataToChat {
+	return request.DataToChat{
+		User:           data["sender"].(map[string]interface{})["login"].(string),
+		RepositoryUrl:  data["repository"].(map[string]interface{})["clone_url"].(string),
+		RepositoryName: data["repository"].(map[string]interface{})["full_name"].(string),
+		PullRequestUrl: strings.ReplaceAll(strings.ReplaceAll(strings.ReplaceAll(data["pull_request"].(map[string]interface{})["url"].(string), "api.", ""), "repos/", ""), "/pulls", "/pull"),
+	}
 }

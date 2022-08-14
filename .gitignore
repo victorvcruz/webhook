@@ -1,1 +1,4 @@
 .idea
+.env
+docker-compose.yml
+mongo_data
