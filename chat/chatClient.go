@@ -6,6 +6,6 @@ import (
 )
 
 type ChatClient interface {
-	SendMessage(body request.DataToChat, typePullRequest response.PullRequestType, threadID string) (map[string]interface{}, error)
+	SendMessage(body request.DataToChat, typePullRequest response.PullRequestType, threadID string) (string, error)
 	getMessage(action response.PullRequestType, data request.DataToChat) string
 }

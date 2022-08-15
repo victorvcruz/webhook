@@ -30,10 +30,10 @@ func (a *Controller) Post(c *fiber.Ctx) error {
 	}
 
 	typeMessage := response.GetType(webhookData)
-	res, err := a.Chat.SendMessage(a.parseWebhookToDataChat(webhookData), typeMessage, threadID)
+	threadID, err = a.Chat.SendMessage(a.parseWebhookToDataChat(webhookData), typeMessage, threadID)
 
 	if dataByDb == nil {
-		err = database.Insert(id, res["thread"].(map[string]interface{})["name"].(string), a.MongoDB)
+		err = database.Insert(id, threadID, a.MongoDB)
 	}
 
 	if err != nil {

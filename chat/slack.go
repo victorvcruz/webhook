@@ -10,21 +10,21 @@ import (
 	"webhooks-chat/controllers/response"
 )
 
-type Google struct {
-	Url string
+type Slack struct {
+	Url      string
+	Channel  string
+	BotToken string
 }
 
-type GoogleMessage struct {
-	Text   string            `json:"text"`
-	Thread map[string]string `json:"thread,omitempty"`
+type SlackMessage struct {
+	Text    string `json:"text"`
+	Channel string `json:"channel"`
+	Thread  string `json:"thread_ts,omitempty"`
 }
 
-func (g *Google) SendMessage(body request.DataToChat, typePullRequest response.PullRequestType, threadID string) (string, error) {
+func (s *Slack) SendMessage(body request.DataToChat, typePullRequest response.PullRequestType, threadID string) (string, error) {
 
-	threadMap := make(map[string]string)
-	threadMap["name"] = threadID
-
-	data := GoogleMessage{g.getMessage(typePullRequest, body), threadMap}
+	data := SlackMessage{s.getMessage(typePullRequest, body), s.Channel, threadID}
 	b, err := json.Marshal(data)
 	if err != nil {
 		return "", err
@@ -32,12 +32,13 @@ func (g *Google) SendMessage(body request.DataToChat, typePullRequest response.P
 
 	client := &http.Client{}
 
-	req, err := http.NewRequest("POST", g.Url, bytes.NewBuffer(b))
+	req, err := http.NewRequest("POST", s.Url, bytes.NewBuffer(b))
 	if err != nil {
 		return "", err
 	}
 
 	req.Header.Add("Content-Type", "application/json; charset=UTF-8")
+	req.Header.Add("Authorization", "Bearer "+s.BotToken)
 
 	resp, err := client.Do(req)
 	if err != nil {
@@ -48,43 +49,44 @@ func (g *Google) SendMessage(body request.DataToChat, typePullRequest response.P
 	if err != nil {
 		return "", err
 	}
+
 	bodyData := make(map[string]interface{})
 	err = json.Unmarshal(b, &bodyData)
 	if err != nil {
 		return "", err
 	}
 
-	return bodyData["thread"].(map[string]interface{})["name"].(string), nil
+	return bodyData["ts"].(string), nil
 }
 
-func (g *Google) getMessage(action response.PullRequestType, data request.DataToChat) string {
+func (s *Slack) getMessage(action response.PullRequestType, data request.DataToChat) string {
 	switch action {
 	case response.CLOSED_PULL_REQUEST:
-		return fmt.Sprintf("<users/all> O *%s* FECHOU UM PULL REQUEST NO REPOSITÓRIO <%s|%s>!\n\n%s",
+		return fmt.Sprintf("<!here> O *%s* FECHOU UM PULL REQUEST NO REPOSITÓRIO <%s|%s>!\n\n%s",
 			data.User,
 			data.RepositoryUrl,
 			data.RepositoryName,
 			data.PullRequestUrl)
 	case response.OPEN_PULL_REQUEST:
-		return fmt.Sprintf("<users/all> O *%s* SOLICITOU UM PULL REQUEST NO REPOSITÓRIO <%s|%s>!\n\n%s",
+		return fmt.Sprintf("<!here> O *%s* SOLICITOU UM PULL REQUEST NO REPOSITÓRIO <%s|%s>!\n\n%s",
 			data.User,
 			data.RepositoryUrl,
 			data.RepositoryName,
 			data.PullRequestUrl)
 	case response.MERGED_PULL_REQUEST:
-		return fmt.Sprintf("<users/all> O *%s* FEZ MERGE DE UM UM PULL REQUEST NO REPOSITÓRIO <%s|%s>!\n\n%s",
+		return fmt.Sprintf("<!here> O *%s* FEZ MERGE DE UM UM PULL REQUEST NO REPOSITÓRIO <%s|%s>!\n\n%s",
 			data.User,
 			data.RepositoryUrl,
 			data.RepositoryName,
 			data.PullRequestUrl)
 	case response.APPROVED_PULL_REQUEST:
-		return fmt.Sprintf("<users/all> O *%s* APROVOU UM UM PULL REQUEST NO REPOSITÓRIO <%s|%s>!\n\n%s",
+		return fmt.Sprintf("<!here> O *%s* APROVOU UM UM PULL REQUEST NO REPOSITÓRIO <%s|%s>!\n\n%s",
 			data.User,
 			data.RepositoryUrl,
 			data.RepositoryName,
 			data.PullRequestUrl)
 	case response.REOPEN_PULL_REQUEST:
-		return fmt.Sprintf("<users/all> O *%s* REABRIU UM UM PULL REQUEST NO REPOSITÓRIO <%s|%s>!\n\n%s",
+		return fmt.Sprintf("<!here> O *%s* REABRIU UM UM PULL REQUEST NO REPOSITÓRIO <%s|%s>!\n\n%s",
 			data.User,
 			data.RepositoryUrl,
 			data.RepositoryName,
