@@ -22,6 +22,9 @@ func (a *API) Run(port string) {
 	case "SLACK":
 		slack := &chat.Slack{Url: os.Getenv("SLACK_CHAT_URL"), Channel: os.Getenv("SLACK_CHANNEL_ID"), BotToken: os.Getenv("SLACK_BOT_TOKEN")}
 		controller = &controllers.Controller{a.MongoDB, slack}
+	case "DISCORD":
+		slack := &chat.Discord{Url: os.Getenv("DISCORD_CHAT_URL")}
+		controller = &controllers.Controller{a.MongoDB, slack}
 	}
 
 	app := fiber.New()
