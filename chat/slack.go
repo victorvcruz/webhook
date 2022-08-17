@@ -62,31 +62,31 @@ func (s *Slack) SendMessage(body request.DataToChat, typePullRequest response.Pu
 func (s *Slack) getMessage(action response.PullRequestType, data request.DataToChat) string {
 	switch action {
 	case response.CLOSED_PULL_REQUEST:
-		return fmt.Sprintf("<!here> O *%s* FECHOU UM PULL REQUEST NO REPOSITÓRIO <%s|%s>!\n\n%s",
+		return fmt.Sprintf("<!here> *%s* CLOSED A PULL REQUEST IN THE <%s|%s> REPOSITORY!\n\n%s",
 			data.User,
 			data.RepositoryUrl,
 			data.RepositoryName,
 			data.PullRequestUrl)
 	case response.OPEN_PULL_REQUEST:
-		return fmt.Sprintf("<!here> O *%s* SOLICITOU UM PULL REQUEST NO REPOSITÓRIO <%s|%s>!\n\n%s",
+		return fmt.Sprintf("<!here> *%s* CREATED A PULL REQUEST IN THE <%s|%s> REPOSITORY!\n\n%s",
 			data.User,
 			data.RepositoryUrl,
 			data.RepositoryName,
 			data.PullRequestUrl)
 	case response.MERGED_PULL_REQUEST:
-		return fmt.Sprintf("<!here> O *%s* FEZ MERGE DE UM UM PULL REQUEST NO REPOSITÓRIO <%s|%s>!\n\n%s",
+		return fmt.Sprintf("<!here> *%s* MERGED DE A PULL REQUEST IN THE <%s|%s> REPOSITORY!\n\n%s",
 			data.User,
 			data.RepositoryUrl,
 			data.RepositoryName,
 			data.PullRequestUrl)
 	case response.APPROVED_PULL_REQUEST:
-		return fmt.Sprintf("<!here> O *%s* APROVOU UM UM PULL REQUEST NO REPOSITÓRIO <%s|%s>!\n\n%s",
+		return fmt.Sprintf("<!here> *%s* APPROVED A PULL REQUEST IN THE <%s|%s> REPOSITORY!\n\n%s",
 			data.User,
 			data.RepositoryUrl,
 			data.RepositoryName,
 			data.PullRequestUrl)
 	case response.REOPEN_PULL_REQUEST:
-		return fmt.Sprintf("<!here> O *%s* REABRIU UM UM PULL REQUEST NO REPOSITÓRIO <%s|%s>!\n\n%s",
+		return fmt.Sprintf("<!here> *%s* REOPENED A PULL REQUEST IN THE <%s|%s> REPOSITORY!\n\n%s",
 			data.User,
 			data.RepositoryUrl,
 			data.RepositoryName,

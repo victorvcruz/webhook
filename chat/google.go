@@ -60,31 +60,31 @@ func (g *Google) SendMessage(body request.DataToChat, typePullRequest response.P
 func (g *Google) getMessage(action response.PullRequestType, data request.DataToChat) string {
 	switch action {
 	case response.CLOSED_PULL_REQUEST:
-		return fmt.Sprintf("<users/all> O *%s* FECHOU UM PULL REQUEST NO REPOSITÓRIO <%s|%s>!\n\n%s",
+		return fmt.Sprintf("<users/all> *%s* CLOSED A PULL REQUEST IN THE <%s|%s> REPOSITORY!\n\n%s",
 			data.User,
 			data.RepositoryUrl,
 			data.RepositoryName,
 			data.PullRequestUrl)
 	case response.OPEN_PULL_REQUEST:
-		return fmt.Sprintf("<users/all> O *%s* SOLICITOU UM PULL REQUEST NO REPOSITÓRIO <%s|%s>!\n\n%s",
+		return fmt.Sprintf("<users/all> *%s* CREATED A PULL REQUEST IN THE <%s|%s> REPOSITORY!\n\n%s",
 			data.User,
 			data.RepositoryUrl,
 			data.RepositoryName,
 			data.PullRequestUrl)
 	case response.MERGED_PULL_REQUEST:
-		return fmt.Sprintf("<users/all> O *%s* FEZ MERGE DE UM UM PULL REQUEST NO REPOSITÓRIO <%s|%s>!\n\n%s",
+		return fmt.Sprintf("<users/all> *%s* MERGED A PULL REQUEST IN THE <%s|%s> REPOSITORY!\n\n%s",
 			data.User,
 			data.RepositoryUrl,
 			data.RepositoryName,
 			data.PullRequestUrl)
 	case response.APPROVED_PULL_REQUEST:
-		return fmt.Sprintf("<users/all> O *%s* APROVOU UM UM PULL REQUEST NO REPOSITÓRIO <%s|%s>!\n\n%s",
+		return fmt.Sprintf("<users/all> *%s* APPROVED A PULL REQUEST IN THE <%s|%s> REPOSITORY!\n\n%s",
 			data.User,
 			data.RepositoryUrl,
 			data.RepositoryName,
 			data.PullRequestUrl)
 	case response.REOPEN_PULL_REQUEST:
-		return fmt.Sprintf("<users/all> O *%s* REABRIU UM UM PULL REQUEST NO REPOSITÓRIO <%s|%s>!\n\n%s",
+		return fmt.Sprintf("<users/all> *%s* REOPENED A PULL REQUEST IN THE <%s|%s> REPOSITORY!\n\n%s",
 			data.User,
 			data.RepositoryUrl,
 			data.RepositoryName,
