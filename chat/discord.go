@@ -35,7 +35,6 @@ func (d *Discord) SendMessage(body request.DataToChat, typePullRequest response.
 	}
 
 	req.Header.Add("Content-Type", "application/json; charset=UTF-8")
-	//req.Header.Add("Authorization", "Bot "+d.BotToken)
 
 	resp, err := client.Do(req)
 	if err != nil {

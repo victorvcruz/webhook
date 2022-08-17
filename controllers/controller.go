@@ -40,25 +40,25 @@ func (a *Controller) Post(c *fiber.Ctx) error {
 		isTimeout = true
 		timeOut <- true
 	}()
-	go func() {
-		typeMessage := response.GetType(webhookData)
-		threadID, err = a.Chat.SendMessage(a.parseWebhookToDataChat(webhookData), typeMessage, threadID)
+
+	typeMessage := response.GetType(webhookData)
+	threadID, err = a.Chat.SendMessage(a.parseWebhookToDataChat(webhookData), typeMessage, threadID)
+	if err != nil {
+		c.Status(http.StatusInternalServerError).JSON(`{"message": "Internal Server Error"}`)
+		doneC <- true
+	}
+
+	if dataByDb == nil {
+		err = database.Insert(id, threadID, a.MongoDB)
 		if err != nil {
 			c.Status(http.StatusInternalServerError).JSON(`{"message": "Internal Server Error"}`)
 			doneC <- true
 		}
+	}
 
-		if dataByDb == nil {
-			err = database.Insert(id, threadID, a.MongoDB)
-			if err != nil {
-				c.Status(http.StatusInternalServerError).JSON(`{"message": "Internal Server Error"}`)
-				doneC <- true
-			}
-		}
+	c.Status(http.StatusOK).JSON(`{"message": "OK"}`)
+	doneC <- true
 
-		c.Status(http.StatusOK).JSON(`{"message": "OK"}`)
-		doneC <- true
-	}()
 	select {
 	case <-doneC:
 		return nil
