@@ -6,6 +6,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 	"net/http"
 	"strings"
+	"time"
 	"webhooks-chat/chat"
 	"webhooks-chat/controllers/request"
 	"webhooks-chat/controllers/response"
@@ -16,6 +17,8 @@ type Controller struct {
 	MongoDB *mongo.Collection
 	Chat    chat.ChatClient
 }
+
+var isTimeout bool
 
 func (a *Controller) Post(c *fiber.Ctx) error {
 	webhookData := make(map[string]interface{})
@@ -29,17 +32,40 @@ func (a *Controller) Post(c *fiber.Ctx) error {
 		threadID = dataByDb["thread"].(string)
 	}
 
-	typeMessage := response.GetType(webhookData)
-	threadID, err = a.Chat.SendMessage(a.parseWebhookToDataChat(webhookData), typeMessage, threadID)
+	doneC := make(chan bool, 1)
+	timeOut := make(chan bool, 1)
+	go func() {
+		isTimeout = false
+		time.Sleep(20 * time.Second)
+		isTimeout = true
+		timeOut <- true
+	}()
+	go func() {
+		typeMessage := response.GetType(webhookData)
+		threadID, err = a.Chat.SendMessage(a.parseWebhookToDataChat(webhookData), typeMessage, threadID)
+		if err != nil {
+			c.Status(http.StatusInternalServerError).JSON(`{"message": "Internal Server Error"}`)
+			doneC <- true
+		}
 
-	if dataByDb == nil {
-		err = database.Insert(id, threadID, a.MongoDB)
-	}
+		if dataByDb == nil {
+			err = database.Insert(id, threadID, a.MongoDB)
+			if err != nil {
+				c.Status(http.StatusInternalServerError).JSON(`{"message": "Internal Server Error"}`)
+				doneC <- true
+			}
+		}
 
-	if err != nil {
-		return c.Status(http.StatusInternalServerError).JSON(`{"message": "Server Exception"}`)
+		c.Status(http.StatusOK).JSON(`{"message": "OK"}`)
+		doneC <- true
+	}()
+	select {
+	case <-doneC:
+		return nil
+	case <-timeOut:
+		c.Status(http.StatusGatewayTimeout).JSON(`{"message": "Gateway Timeout"}`)
+		return nil
 	}
-	return c.Status(http.StatusOK).JSON(`{"message": "OK"}`)
 }
 
 func (a *Controller) parseWebhookToDataChat(data map[string]interface{}) request.DataToChat {
@@ -47,6 +73,6 @@ func (a *Controller) parseWebhookToDataChat(data map[string]interface{}) request
 		User:           data["sender"].(map[string]interface{})["login"].(string),
 		RepositoryUrl:  data["repository"].(map[string]interface{})["clone_url"].(string),
 		RepositoryName: data["repository"].(map[string]interface{})["full_name"].(string),
-		PullRequestUrl: strings.ReplaceAll(strings.ReplaceAll(strings.ReplaceAll(data["pull_request"].(map[string]interface{})["url"].(string), "api.", ""), "repos/", ""), "/pulls", "/pull"),
+		PullRequestUrl: strings.NewReplacer("api.", "", "repos/", "", "/pulls", "/pull").Replace(data["pull_request"].(map[string]interface{})["url"].(string)),
 	}
 }
