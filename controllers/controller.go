@@ -18,8 +18,6 @@ type Controller struct {
 	Chat    chat.ChatClient
 }
 
-var isTimeout bool
-
 func (a *Controller) Post(c *fiber.Ctx) error {
 	webhookData := make(map[string]interface{})
 	err := json.Unmarshal(c.Body(), &webhookData)
@@ -35,9 +33,7 @@ func (a *Controller) Post(c *fiber.Ctx) error {
 	doneC := make(chan bool, 1)
 	timeOut := make(chan bool, 1)
 	go func() {
-		isTimeout = false
 		time.Sleep(20 * time.Second)
-		isTimeout = true
 		timeOut <- true
 	}()
 
