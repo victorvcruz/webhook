@@ -5,6 +5,11 @@
   <img src="/assets/example.gif" height="400">
 </p>
 
+## Architecture
+<p align="center">
+  <img src="docs/images/web-scraping.jpg" height="440">
+</p>
+
 ### Platforms already integrated
 <img height="70" src="https://logodownload.org/wp-content/uploads/2017/11/discord-logo-4-1.png" alt="discord"/></code>
 <img height="70" src="https://user-images.githubusercontent.com/5147537/54070671-0a173780-4263-11e9-8946-09ac0e37d8c6.png" alt="slack"/>
