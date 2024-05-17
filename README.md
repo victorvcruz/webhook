@@ -13,7 +13,7 @@
 ----
 ## Architecture
 <p align="center">
-  <img src="docs/images/web-scraping.jpg" height="440">
+  <img src="assets/webhook.jpg" height="440">
 </p>
 
 ## Built With
